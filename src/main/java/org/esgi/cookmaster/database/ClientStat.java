@@ -2,12 +2,12 @@ package org.esgi.cookmaster.database;
 import java.util.Random;
 
 public class ClientStat {
-    protected enum Type{
+    public enum Type{
         INDIVIDUAL,
         CORPORATE,
         ORGANIZER
     }
-    protected enum Distribution{
+    public enum Distribution{
         LOYAL,
         OCCASIONAL,
         NEW
@@ -31,6 +31,14 @@ public class ClientStat {
 
     public int getClientExpense() {
         return clientExpense;
+    }
+
+    public Distribution getClientDistribution() {
+        return clientDistribution;
+    }
+
+    public Type getClientType() {
+        return clientType;
     }
 
     @Override
