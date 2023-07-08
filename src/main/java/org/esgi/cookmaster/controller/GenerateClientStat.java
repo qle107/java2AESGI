@@ -1,7 +1,11 @@
 package org.esgi.cookmaster.controller;
 
+import com.itextpdf.text.Document;
 import org.esgi.cookmaster.database.ClientStat;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.Collections;
 import java.util.Comparator;
 
@@ -12,11 +16,17 @@ import java.util.HashMap;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartFrame;
+import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.pdf.PdfWriter;
 
+import java.awt.*;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 public class GenerateClientStat {
 
 
@@ -141,8 +151,45 @@ public class GenerateClientStat {
                 true,
                 false
         );
+        // Display the chart in a frame
+//        ChartFrame frame = new ChartFrame("Bar Chart", chart);
+//        frame.pack();
+//        frame.setVisible(true);
         return chart;
 
+    }
+    public void generatePDF(JFreeChart chart1, JFreeChart chart2, JFreeChart chart3, JFreeChart chart4) {
+        Document document = new Document();
+        try {
+            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream("chart.pdf"));
+            document.open();
+
+            // Generate chart images
+            ByteArrayOutputStream byteStream1 = new ByteArrayOutputStream();
+            ChartUtils.writeChartAsPNG(byteStream1, chart1, 500, 300);
+            com.itextpdf.text.Image image1 = com.itextpdf.text.Image.getInstance(byteStream1.toByteArray());
+            document.add(image1);
+
+            ByteArrayOutputStream byteStream2 = new ByteArrayOutputStream();
+            ChartUtils.writeChartAsPNG(byteStream2, chart2, 500, 300);
+            com.itextpdf.text.Image image2 = com.itextpdf.text.Image.getInstance(byteStream2.toByteArray());
+            document.add(image2);
+
+            ByteArrayOutputStream byteStream3 = new ByteArrayOutputStream();
+            ChartUtils.writeChartAsPNG(byteStream3, chart3, 500, 300);
+            com.itextpdf.text.Image image3 = com.itextpdf.text.Image.getInstance(byteStream3.toByteArray());
+            document.add(image3);
+
+            ByteArrayOutputStream byteStream4 = new ByteArrayOutputStream();
+            ChartUtils.writeChartAsPNG(byteStream4, chart4, 500, 300);
+            com.itextpdf.text.Image image4 = com.itextpdf.text.Image.getInstance(byteStream4.toByteArray());
+            document.add(image4);
+
+            document.close();
+            writer.close();
+        } catch (DocumentException  | IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }
