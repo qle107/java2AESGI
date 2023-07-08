@@ -1,9 +1,7 @@
 package org.esgi.cookmaster.database;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,8 +18,28 @@ public class ConnectDatabase {
     private String classType = null;
     private Statement connStatement;
     private Connection conn;
+    private String userTable;
+    private String eventTable;
+    private String subscriptionTable;
+    private String roomTable;
 
-    public void defineDb(String host, String port, String name, String userName, String password) {
+    public String getUserTable() {
+        return userTable;
+    }
+
+    public String getEventTable() {
+        return eventTable;
+    }
+
+    public String getSubscriptionTable() {
+        return subscriptionTable;
+    }
+
+    public String getRoomTable() {
+        return roomTable;
+    }
+
+    protected void defineDb(String host, String port, String name, String userName, String password) {
         switch (port) {
             case "3306":
                 this.dbType = "mysql";
@@ -39,6 +57,13 @@ public class ConnectDatabase {
         this.dbPort = port;
         this.dbName = name;
     }
+
+    protected void defineTable(String userTable, String eventTable, String subscriptionTable) {
+        this.eventTable = eventTable;
+        this.userTable = userTable;
+        this.subscriptionTable = subscriptionTable;
+    }
+
     public void modifyDbType(String name) {
         this.dbType = name;
     }
@@ -64,21 +89,19 @@ public class ConnectDatabase {
             try {
                 Class.forName(this.classType);
                 Connection connection = DriverManager.getConnection(jdbcUrl, this.dbUsername, this.dbPassword);
-                System.out.println("Connected to the database successfully!");
 
                 // Perform database
                 conn = connection;
                 connStatement = connection.createStatement();
-                System.out.println("connected");
             } catch (SQLException e) {
-                System.out.println("Failed to connect to the database.");
+                System.err.println("Failed to connect to the database.");
                 e.getMessage();
             } catch (ClassNotFoundException e) {
                 e.getMessage();
-//                throw new RuntimeException(e);
+                throw new RuntimeException(e);
             }
         } else {
-            System.out.println("Database type is not supported");
+            System.err.println("Database type is not supported");
         }
     }
 
@@ -117,6 +140,7 @@ public class ConnectDatabase {
         }
         return tableNames;
     }
+
     public List<List<List<Object>>> getAllDataFromTables() {
         try {
             if (this.conn != null && !this.connStatement.isClosed()) {
@@ -148,19 +172,155 @@ public class ConnectDatabase {
                 try (Statement stmt = conn.createStatement();
                      ResultSet resultSet = stmt.executeQuery(query)) {
                     data.add(Collections.singletonList(table));
-
                     ResultSetMetaData metaData = resultSet.getMetaData();
                     int columnCount = metaData.getColumnCount();
 
                     while (resultSet.next()) {
                         List<Object> row = new ArrayList<>();
                         for (int i = 1; i <= columnCount; i++) {
+//                            System.out.println(resultSet.getObject("price"));
                             Object columnValue = resultSet.getObject(i);
+                            System.out.println(columnValue.getClass());
+
                             row.add(columnValue);
                         }
                         data.add(row);
                     }
                 }
+                return data;
+            } else {
+                return null;
+            }
+        } catch (SQLException error) {
+            System.err.println("Error querying data: " + error.getMessage());
+            return null;
+        }
+    }
+
+    public Subscription getSubscription(String id) {
+        try {
+            if (conn != null && !conn.isClosed()) {
+                Subscription data = null;
+                String query = "SELECT * FROM " + subscriptionTable + "where id = '" + id + "' ";
+                try (Statement stmt = conn.createStatement();
+                     ResultSet resultSet = stmt.executeQuery(query)) {
+                    ResultSetMetaData metaData = resultSet.getMetaData();
+                    int columnCount = metaData.getColumnCount();
+                    while (resultSet.next()) {
+                        for (int i = 1; i <= columnCount; i++) {
+                            data = new Subscription(resultSet.getString("id"),
+                                    resultSet.getString("name"),
+                                    resultSet.getString("price"),
+                                    resultSet.getString("currency"),
+                                    resultSet.getString("frequency"),
+                                    resultSet.getString("stripe_api_key"),
+                                    resultSet.getString("stripe_product_key")
+                            );
+                        }
+                    }
+                }
+                return data;
+            } else {
+                return null;
+            }
+        } catch (SQLException error) {
+            System.err.println("Error querying data: " + error.getMessage());
+            return null;
+        }
+    }
+
+    public User getUser(String id) {
+        try {
+            if (conn != null && !conn.isClosed()) {
+                User data = null;
+                String query = "SELECT * FROM " + userTable + " where id = '" + id + "' ";
+                try (Statement stmt = conn.createStatement();
+                     ResultSet resultSet = stmt.executeQuery(query)) {
+
+                    ResultSetMetaData metaData = resultSet.getMetaData();
+                    int columnCount = metaData.getColumnCount();
+                    while (resultSet.next()) {
+                        for (int i = 1; i <= columnCount; i++) {
+                            data = new User(resultSet.getString("id"),
+                                    resultSet.getString("email"),
+                                    resultSet.getString("phone"),
+                                    resultSet.getString("last_name"),
+                                    resultSet.getString("first_name"),
+                                    resultSet.getString("address"),
+                                    resultSet.getString("role"),
+                                    resultSet.getString("subscription_id")
+                            );
+                        }
+                    }
+                }
+
+                return data;
+            } else {
+                return null;
+            }
+        } catch (SQLException error) {
+            System.err.println("Error querying data: " + error.getMessage());
+            return null;
+        }
+    }
+    public Event getEvent(String id) {
+        try {
+            if (conn != null && !conn.isClosed()) {
+                Event data = null;
+                String query = "SELECT * FROM " + eventTable + " where id = '" + id + "' ";
+                try (Statement stmt = conn.createStatement();
+                     ResultSet resultSet = stmt.executeQuery(query)) {
+
+                    ResultSetMetaData metaData = resultSet.getMetaData();
+                    int columnCount = metaData.getColumnCount();
+                    while (resultSet.next()) {
+                        for (int i = 1; i <= columnCount; i++) {
+                            data = new Event(resultSet.getString("id"),
+                                    resultSet.getString("name"),
+                                    resultSet.getString("max_capacity"),
+                                    resultSet.getString("description"),
+                                    resultSet.getString("type"),
+                                    resultSet.getString("start_time"),
+                                    resultSet.getString("end_time"),
+                                    resultSet.getString("room_id")
+                            );
+                        }
+                    }
+                }
+
+                return data;
+            } else {
+                return null;
+            }
+        } catch (SQLException error) {
+            System.err.println("Error querying data: " + error.getMessage());
+            return null;
+        }
+    }
+
+    public Room getRoom(String id) {
+        try {
+            if (conn != null && !conn.isClosed()) {
+                Room data = null;
+                String query = "SELECT * FROM " + roomTable + " where id = '" + id + "' ";
+                try (Statement stmt = conn.createStatement();
+                     ResultSet resultSet = stmt.executeQuery(query)) {
+
+                    ResultSetMetaData metaData = resultSet.getMetaData();
+                    int columnCount = metaData.getColumnCount();
+                    while (resultSet.next()) {
+                        for (int i = 1; i <= columnCount; i++) {
+                            data = new Room(resultSet.getString("id"),
+                                    resultSet.getString("name"),
+                                    resultSet.getString("address"),
+                                    resultSet.getString("max_capacity"),
+                                    resultSet.getString("price"),
+                                    resultSet.getString("availability")
+                            );
+                        }
+                    }
+                }
+
                 return data;
             } else {
                 return null;
@@ -216,6 +376,10 @@ public class ConnectDatabase {
         this.dbName = config.getProperty("db.name");
         this.dbUsername = config.getProperty("db.username");
         this.dbPassword = config.getProperty("db.password");
+        this.subscriptionTable = config.getProperty("tbl.sub.name");
+        this.eventTable = config.getProperty("tbl.event.name");
+        this.userTable = config.getProperty("tbl.usr.name");
+        this.roomTable = config.getProperty("tbl.room.name");
 
 
         this.defineDb(this.dbHost, this.dbPort, this.dbName, this.dbUsername, this.dbPassword);

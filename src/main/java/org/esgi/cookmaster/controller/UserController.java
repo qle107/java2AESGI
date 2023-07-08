@@ -1,51 +1,46 @@
 package org.esgi.cookmaster.controller;
 
 import org.esgi.cookmaster.database.ConnectDatabase;
+import org.esgi.cookmaster.database.User;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
 public class UserController {
-    ConnectDatabase connectDb = new ConnectDatabase();
-    Properties config = new Properties();
+    protected ConnectDatabase connectDb = new ConnectDatabase();
 
-    public UserController() {
-
-        try (FileInputStream fis = new FileInputStream("src/config.cfg")) {
-            config.load(fis);
-        } catch (IOException e) {
-            System.err.println("Error loading the configuration file: " + e.getMessage());
-            return;
-        }
+    public User getUser(String id) {
         connectDb.importConfig("src/config.cfg");
         connectDb.connect();
+        return connectDb.getUser(id);
     }
 
-    public Object getUser(String id) {
-        Object result = null;
-        List<List<Object>> storedSubs = connectDb.getDataFromTable(config.getProperty("tbl.usr.name"));
-        for (List<Object> storedSub : storedSubs) {
-            if (storedSub.get(0) == id) {
-                storedSub.add(new SubscriptionController().getSub(id));
-                result = storedSub.get(1);
-                return result;
-            }
+    public List<User> getLastUsers(int limited) throws SQLException {
+        List<User> storedUser = new ArrayList<>();
+        connectDb.importConfig("src/config.cfg");
+        connectDb.connect();
+        ResultSet resultSet = connectDb.executeQuery("SELECT COUNT(*) AS total_users FROM users");
+        int totalUsers = 0;
+        if (resultSet.next()) {
+            totalUsers = resultSet.getInt("total_users");
+
         }
-        return result;
-    }
+        int totalQuery = 0;
 
-    public int maxUsr() {
-        int result = 0;
-        List<List<Object>> storedSubs = connectDb.getDataFromTable(config.getProperty("tbl.usr.name"));
-        for (List<Object> storedSub : storedSubs) {
-            result++;
+        if (limited < totalUsers && limited > 0) {
+            totalQuery = totalUsers - limited;
         }
-        return result;
+
+        for (int countUser = totalUsers; countUser > totalQuery; countUser--) {
+            User storedUserToArray = connectDb.getUser(String.valueOf(countUser));
+            storedUser.add(storedUserToArray);
+        }
+        return storedUser;
     }
 
-    public String getSub(String id) {
-        return new SubscriptionController().getSub(id);
-    }
 }
