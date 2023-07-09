@@ -1,7 +1,7 @@
 package org.esgi.cookmaster.controller;
 
 import com.itextpdf.text.Document;
-import org.esgi.cookmaster.database.ClientStat;
+import org.esgi.cookmaster.database.EventStat;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
+import org.esgi.cookmaster.database.EventStat;
 import org.jfree.chart.ChartFactory;
 
 import org.jfree.chart.ChartUtils;
@@ -24,101 +25,100 @@ import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.pdf.PdfWriter;
 
 import java.io.FileOutputStream;
-public class GenerateClientStat {
+public class GenerateEventStat {
 
-
-    public List<ClientStat> generateClients() {
-        List<ClientStat> storedClient = new ArrayList<>();
+    public List<EventStat> generateEvents() {
+        List<EventStat> storedEvent = new ArrayList<>();
 
         for (int i = 0; i < 30; i++) {
-            ClientStat fakeClient = new ClientStat();
-            storedClient.add(fakeClient);
+            EventStat fakeEvent = new EventStat();
+            storedEvent.add(fakeEvent);
         }
-        return storedClient;
+        return storedEvent;
     }
 
-    public List<ClientStat> getTopExpenses(List<ClientStat> clients) {
-        List<ClientStat> storedTopClients = new ArrayList<>(clients);
-        Collections.sort(storedTopClients, Comparator.comparingInt(ClientStat::getClientExpense).reversed());
-        return storedTopClients.subList(0, Math.min(5, storedTopClients.size()));
+    public List<EventStat> getTopParticipate(List<EventStat> events) {
+        List<EventStat> storedTopEvents = new ArrayList<>(events);
+        Collections.sort(storedTopEvents, Comparator.comparingInt(EventStat::getParticipation).reversed());
+        return storedTopEvents.subList(0, Math.min(5, storedTopEvents.size()));
     }
 
-    public Map<ClientStat.Type, Integer> calculateTotalExpensesByType(List<ClientStat> clients) {
-        Map<ClientStat.Type, Integer> totalExpensesByType = new HashMap<>();
+    public Map<EventStat.Type, Integer> calculateTotalParticipateByType(List<EventStat> events) {
+        Map<EventStat.Type, Integer> totalParticipateByType = new HashMap<>();
 
-        for (ClientStat client : clients) {
-            ClientStat.Type type = client.getClientType();
-            int expense = client.getClientExpense();
-            totalExpensesByType.put(type, totalExpensesByType.getOrDefault(type, 0) + expense);
-        }
-
-        return totalExpensesByType;
-    }
-
-    public Map<ClientStat.Type, Integer> countUserByType(List<ClientStat> clients) {
-        Map<ClientStat.Type, Integer> userCountByType = new HashMap<>();
-
-        for (ClientStat client : clients) {
-            ClientStat.Type type = client.getClientType();
-            userCountByType.put(type, userCountByType.getOrDefault(type, 0) + 1);
+        for (EventStat event : events) {
+            EventStat.Type type = event.getEventType();
+            int expense = event.getParticipation();
+            totalParticipateByType.put(type, totalParticipateByType.getOrDefault(type, 0) + expense);
         }
 
-        return userCountByType;
+        return totalParticipateByType;
     }
 
-    public Map<ClientStat.Distribution, Integer> calculateTotalExpensesByDistribution(List<ClientStat> clients) {
-        Map<ClientStat.Distribution, Integer> totalExpensesByType = new HashMap<>();
+    public Map<EventStat.Type, Integer> participateByType(List<EventStat> events) {
+        Map<EventStat.Type, Integer> participateByType = new HashMap<>();
 
-        for (ClientStat client : clients) {
-            ClientStat.Distribution distribution = client.getClientDistribution();
-            int expense = client.getClientExpense();
-            totalExpensesByType.put(distribution, totalExpensesByType.getOrDefault(distribution, 0) + expense);
+        for (EventStat event : events) {
+            EventStat.Type type = event.getEventType();
+            participateByType.put(type, participateByType.getOrDefault(type, 0) + 1);
         }
 
-        return totalExpensesByType;
+        return participateByType;
     }
 
-    public JFreeChart generatePieChart(Map<ClientStat.Type, Integer> inputValue) {
+    public Map<EventStat.Time, Integer> calculateTotalParticipateByTime(List<EventStat> clients) {
+        Map<EventStat.Time, Integer> totalParticipateByTime = new HashMap<>();
+
+        for (EventStat client : clients) {
+            EventStat.Time time = client.getEventTime();
+            int expense = client.getParticipation();
+            totalParticipateByTime.put(time, totalParticipateByTime.getOrDefault(time, 0) + expense);
+        }
+
+        return totalParticipateByTime;
+    }
+
+    public JFreeChart generatePieChart(Map<EventStat.Type, Integer> inputValue) {
         // Create a dataset from the input values
         DefaultPieDataset dataset = new DefaultPieDataset();
-        for (Map.Entry<ClientStat.Type, Integer> entry : inputValue.entrySet()) {
+        for (Map.Entry<EventStat.Type, Integer> entry : inputValue.entrySet()) {
             dataset.setValue(entry.getKey().toString(), entry.getValue());
         }
 
         // Create the pie chart
-        JFreeChart chart = ChartFactory.createPieChart("Client Expenses by Type", dataset, true, true, false);
+        JFreeChart chart = ChartFactory.createPieChart("Event participation by type", dataset, true, true, false);
         return chart;
 
     }
 
-    public JFreeChart generateLineChart(List<ClientStat> inputValue) {
+    public JFreeChart generateLineChart(List<EventStat> inputValue) {
         // Get the top 5 clients with the highest expenses
-        List<ClientStat> topExpenses = getTopExpenses(inputValue);
+        List<EventStat> topExpenses = getTopParticipate(inputValue);
 
         // Create a dataset for the line chart
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         int index = 1;
-        for (ClientStat client : topExpenses) {
-            dataset.addValue(client.getClientExpense(), "Top Expenses", client.getName());
+        for (EventStat event : topExpenses) {
+            dataset.addValue(event.getParticipation(), "Top Participate", event.getName());
             index++;
         }
 
         // Create the line chart
-        JFreeChart chart = ChartFactory.createLineChart("Top 5 Expenses", "Client", "Expense", dataset);
+        JFreeChart chart = ChartFactory.createLineChart("Top 5 Participates", "Event", "Participate", dataset);
         return chart;
 
     }
 
-    public JFreeChart generateStackedBarChart(Map<ClientStat.Distribution, Integer> inputData) {
+    public JFreeChart generateStackedBarChart(Map<EventStat.Time, Integer> inputData) {
         // Create a dataset from the input data
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-        for (Map.Entry<ClientStat.Distribution, Integer> entry : inputData.entrySet()) {
-            dataset.addValue(entry.getValue(), entry.getKey().toString(), "Client type");
+        for (Map.Entry<EventStat.Time, Integer> entry : inputData.entrySet()) {
+            dataset.addValue(entry.getValue(), entry.getKey().toString(), "Event types");
         }
 
         // Create the stacked bar chart
         JFreeChart chart = ChartFactory.createStackedBarChart(
-                "Distribution of Clients",
+                "Time of Event",
                 "Category",
                 "Value",
                 dataset,
@@ -130,18 +130,18 @@ public class GenerateClientStat {
         return chart;
     }
 
-    public JFreeChart generateBarChart(Map<ClientStat.Type, Integer> inputData) {
+    public JFreeChart generateBarChart(Map<EventStat.Type, Integer> inputData) {
         // Create a dataset from the input data
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-        for (Map.Entry<ClientStat.Type, Integer> entry : inputData.entrySet()) {
-            dataset.addValue(entry.getValue(), "User Count", entry.getKey().toString());
+        for (Map.Entry<EventStat.Type, Integer> entry : inputData.entrySet()) {
+            dataset.addValue(entry.getValue(), "Event Count", entry.getKey().toString());
         }
 
         // Create the bar chart
         JFreeChart chart = ChartFactory.createBarChart(
-                "User Count by Type",
-                "Client Type",
-                "User Count",
+                "Participate Count by Type",
+                "Event Type",
+                "Participate Count",
                 dataset,
                 PlotOrientation.VERTICAL,
                 true,
@@ -158,7 +158,7 @@ public class GenerateClientStat {
     protected void generatePDF(JFreeChart chart1, JFreeChart chart2, JFreeChart chart3, JFreeChart chart4) {
         Document document = new Document();
         try {
-            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream("user_chart.pdf"));
+            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream("event_chart.pdf"));
             document.open();
 
             // Generate chart images
@@ -189,14 +189,14 @@ public class GenerateClientStat {
         }
     }
     public void extractAllCharts(){
-        List<ClientStat> test2 = this.generateClients();
-        List<ClientStat> topCustomer = this.getTopExpenses(test2);
-        Map<ClientStat.Type, Integer> sortWithType = this.calculateTotalExpensesByType(test2);
-        Map<ClientStat.Type, Integer> countWithType = this.countUserByType(test2);
-        Map<ClientStat.Distribution,Integer> customerDistribution = this.calculateTotalExpensesByDistribution(test2);
+        List<EventStat> test2 = this.generateEvents();
+        List<EventStat> topEvent = this.getTopParticipate(test2);
+        Map<EventStat.Type, Integer> sortWithType = this.calculateTotalParticipateByType(test2);
+        Map<EventStat.Type, Integer> countWithType = this.participateByType(test2);
+        Map<EventStat.Time,Integer> eventTime = this.calculateTotalParticipateByTime(test2);
         JFreeChart chart1 =  this.generatePieChart(sortWithType);
-        JFreeChart chart2 =  this.generateLineChart(topCustomer);
-        JFreeChart chart3 =  this.generateStackedBarChart(customerDistribution);
+        JFreeChart chart2 =  this.generateLineChart(topEvent);
+        JFreeChart chart3 =  this.generateStackedBarChart(eventTime);
         JFreeChart chart4=  this.generateBarChart(countWithType);
         this.generatePDF(chart1,chart2,chart3,chart4);
     }

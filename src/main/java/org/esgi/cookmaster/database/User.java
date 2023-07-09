@@ -33,6 +33,38 @@ public class User {
                 '}';
     }
 
+    public String getId() {
+        return id;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public Subscription getSubscription() {
+        return subscription;
+    }
+
     protected User(String id, String email, String phone, String lastName, String firstName, String address, String role, String subscription_id) {
         this.id = id;
         this.email = email;

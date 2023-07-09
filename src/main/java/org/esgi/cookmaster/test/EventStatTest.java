@@ -1,13 +1,11 @@
 package org.esgi.cookmaster.test;
 
 import org.esgi.cookmaster.controller.GenerateClientStat;
-import org.esgi.cookmaster.database.ClientStat;
+import org.esgi.cookmaster.controller.GenerateEventStat;
 
-import java.sql.SQLException;
-
-public class ClientStatTest {
+public class EventStatTest {
     public static void main(String[] args) {
-        GenerateClientStat test1 = new GenerateClientStat();
+        GenerateEventStat test1 = new GenerateEventStat();
         test1.extractAllCharts();
     }
 }

@@ -44,6 +44,38 @@ public class Event {
         this.room.defineRoom(room_id);
     }
 
+    public String getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getMax_capacity() {
+        return max_capacity;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public String getStart_time() {
+        return start_time;
+    }
+
+    public String getEnd_time() {
+        return end_time;
+    }
+
+    public Room getRoom() {
+        return room;
+    }
+
     protected void createEvent(Event insertEvent) {
         this.id = insertEvent.id;
         this.name = insertEvent.name;

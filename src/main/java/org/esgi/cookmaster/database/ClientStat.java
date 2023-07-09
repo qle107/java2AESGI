@@ -1,4 +1,6 @@
 package org.esgi.cookmaster.database;
+import com.github.javafaker.Faker;
+
 import java.util.Random;
 
 public class ClientStat {
@@ -15,6 +17,7 @@ public class ClientStat {
     private Type clientType;
     private Distribution clientDistribution;
     private int clientExpense;
+    private String name;
 
     public ClientStat() {
         Type[] clientTypes = Type.values();
@@ -27,6 +30,8 @@ public class ClientStat {
 
         randomIndex = new Random().nextInt(900);
         this.clientExpense = randomIndex+100;
+
+        this.name = new Faker().funnyName().name();
     }
 
     public int getClientExpense() {
@@ -35,6 +40,10 @@ public class ClientStat {
 
     public Distribution getClientDistribution() {
         return clientDistribution;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public Type getClientType() {
