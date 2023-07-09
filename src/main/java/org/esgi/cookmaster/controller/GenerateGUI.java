@@ -101,7 +101,9 @@ public class GenerateGUI<T> extends JFrame {
                 } catch (NumberFormatException ex) {
                     quantity = 0;
                 }
-
+                columnNames = new String[]{"ID", "Email", "Phone", "Last Name", "First Name", "Address", "Role"};
+                tableModel = new DefaultTableModel(columnNames, 0);
+                table.setModel(tableModel);
                 try {
                     storedUser = testUserController.getLastUsers(quantity);
 
@@ -131,6 +133,9 @@ public class GenerateGUI<T> extends JFrame {
                 int quantity = 0;
                 try {
                     quantity = Integer.parseInt(quantityText);
+                    columnNames = new String[]{"ID", "Name", "Max Capacity", "Description", "Type", "Start Time", "End Time", "Room"};
+                    tableModel = new DefaultTableModel(columnNames, 0);
+                    table.setModel(tableModel);
                 } catch (NumberFormatException ex) {
                     quantity = 0;
                 }
