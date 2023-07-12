@@ -131,11 +131,12 @@ public class GenerateGUI<T> extends JFrame {
                 List<Event> storedEvent = null;
                 String quantityText = quantityField.getText();
                 int quantity = 0;
+                columnNames = new String[]{"ID", "Name", "Max Capacity", "Description", "Type", "Start Time", "End Time", "Room"};
+                tableModel = new DefaultTableModel(columnNames, 0);
+                table.setModel(tableModel);
                 try {
                     quantity = Integer.parseInt(quantityText);
-                    columnNames = new String[]{"ID", "Name", "Max Capacity", "Description", "Type", "Start Time", "End Time", "Room"};
-                    tableModel = new DefaultTableModel(columnNames, 0);
-                    table.setModel(tableModel);
+
                 } catch (NumberFormatException ex) {
                     quantity = 0;
                 }
