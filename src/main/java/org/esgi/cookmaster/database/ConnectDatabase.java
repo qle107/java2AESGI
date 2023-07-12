@@ -48,7 +48,7 @@ public class ConnectDatabase {
                 this.dbType = "postgresql";
                 break;
             default:
-                this.dbType = "unknown";
+                this.dbType = port;
                 break;
         }
         this.dbPassword = password;
@@ -201,7 +201,7 @@ public class ConnectDatabase {
         try {
             if (conn != null && !conn.isClosed()) {
                 Subscription data = null;
-                String query = "SELECT * FROM " + subscriptionTable + "where id = '" + id + "' ";
+                String query = "SELECT * FROM " + subscriptionTable + " where id = '" + id + "' ";
                 try (Statement stmt = conn.createStatement();
                      ResultSet resultSet = stmt.executeQuery(query)) {
                     ResultSetMetaData metaData = resultSet.getMetaData();
